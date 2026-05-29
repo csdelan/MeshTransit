@@ -22,7 +22,7 @@ internal sealed class EchoHandler : IMessageHandler<EchoCommand, EchoReply>
     public Task<EchoReply> HandleAsync(EchoCommand command, CancellationToken ct) =>
         Task.FromResult(new EchoReply
         {
-            Text = command.Text,
+            Text = "I'm replying",
             EchoedAtUnixMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
         });
 }

@@ -13,6 +13,11 @@
   <Folder Name="/samples/csharp-echo/Shared/">
     <Project Path="samples/csharp-echo/Shared/MeshTransit.Sample.Echo.Shared.csproj" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="docs/CLAUDE.md" />
+    <File Path="docs/PROTOCOL.md" />
+    <File Path="docs/USAGE.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/MeshTransit.Client/MeshTransit.Client.csproj" />
     <Project Path="src/MeshTransit.Contracts/MeshTransit.Contracts.csproj" />
