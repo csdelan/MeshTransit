@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/coordinator/">
+    <Project Path="samples/coordinator/MeshTransit.Sample.Coordinator.csproj" />
+  </Folder>
+  <Folder Name="/samples/csharp-echo/" />
+  <Folder Name="/samples/csharp-echo/Client/">
+    <Project Path="samples/csharp-echo/Client/MeshTransit.Sample.Echo.Client.csproj" />
+  </Folder>
+  <Folder Name="/samples/csharp-echo/Server/">
+    <Project Path="samples/csharp-echo/Server/MeshTransit.Sample.Echo.Server.csproj" />
+  </Folder>
+  <Folder Name="/samples/csharp-echo/Shared/">
+    <Project Path="samples/csharp-echo/Shared/MeshTransit.Sample.Echo.Shared.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/MeshTransit.Client/MeshTransit.Client.csproj" />
+    <Project Path="src/MeshTransit.Contracts/MeshTransit.Contracts.csproj" />
+    <Project Path="src/MeshTransit/MeshTransit.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MeshTransit.IntegrationTests/MeshTransit.IntegrationTests.csproj" />
+    <Project Path="tests/MeshTransit.TestContracts/MeshTransit.TestContracts.csproj" />
+    <Project Path="tests/MeshTransit.Tests/MeshTransit.Tests.csproj" />
+  </Folder>
+</Solution>

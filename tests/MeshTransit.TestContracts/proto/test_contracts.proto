@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package meshtransit.tests;
+
+option csharp_namespace = "MeshTransit.TestContracts";
+
+// Deliberately generic — exercises the transport without naming any business domain.
+message EchoCommand {
+  string text = 1;
+}
+
+message EchoReply {
+  string text = 1;
+  int64  echoed_at_unix_ms = 2;
+}
+
+message PingEvent {
+  string note = 1;
+  uint64 sequence = 2;
+}

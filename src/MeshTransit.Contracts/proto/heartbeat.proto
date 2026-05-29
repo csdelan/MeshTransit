@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package meshtransit.v1;
+
+option csharp_namespace = "MeshTransit.Contracts";
+
+import "google/protobuf/timestamp.proto";
+
+enum ServiceStatus {
+  SERVICE_STATUS_UNSPECIFIED = 0;
+  STARTING                   = 1;
+  HEALTHY                    = 2;
+  DEGRADED                   = 3;
+  STOPPING                   = 4;
+}
+
+message Heartbeat {
+  string service_name                   = 1; // logical name, e.g. "alerts"
+  string instance_id                    = 2; // GUID per process start
+  google.protobuf.Timestamp started_at  = 3;
+  google.protobuf.Timestamp sent_at     = 4;
+  uint64 sequence                       = 5; // monotonic per instance
+  ServiceStatus status                  = 6;
+  uint32 interval_ms                    = 7; // expected cadence
+  map<string, string> metadata          = 8; // free-form (version, pid, etc.)
+}

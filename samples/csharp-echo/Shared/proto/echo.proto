@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package meshtransit.samples.echo;
+
+option csharp_namespace = "MeshTransit.Sample.Echo.Shared";
+
+message EchoCommand {
+  string text = 1;
+}
+
+message EchoReply {
+  string text = 1;
+  int64  echoed_at_unix_ms = 2;
+}
+
+message PingEvent {
+  string note = 1;
+  uint64 sequence = 2;
+}

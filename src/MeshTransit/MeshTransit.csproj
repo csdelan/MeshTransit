@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>MeshTransit</PackageId>
+    <Description>Server primitives (ControlServer, EventPublisher, HeartbeatPublisher, hosted service) for MeshTransit — a brokerless ZeroMQ + Protobuf microservice toolkit.</Description>
+    <PackageTags>zeromq;protobuf;messaging;mesh;microservices</PackageTags>
+    <!-- NetMQ 4.0.x pulls vulnerable transitive deps (System.Drawing.Common, System.Security.Cryptography.Xml)
+         that aren't reachable from MeshTransit's surface. Suppress until NetMQ updates. -->
+    <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NetMQ" Version="4.0.1.13" />
+    <PackageReference Include="Google.Protobuf" Version="3.28.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MeshTransit.Contracts\MeshTransit.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

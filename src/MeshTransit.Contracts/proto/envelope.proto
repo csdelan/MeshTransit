@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package meshtransit.v1;
+
+option csharp_namespace = "MeshTransit.Contracts";
+
+import "google/protobuf/timestamp.proto";
+
+// Outer wrapper carried on every MeshTransit frame.
+// The inner `payload` is an opaque byte string holding a consumer-defined
+// Protobuf message identified by `header.message_type`.
+message Envelope {
+  Header header  = 1;
+  bytes  payload = 2;
+  Error  error   = 3; // populated on REP failures; absent on success
+}
+
+message Header {
+  string correlation_id            = 1;
+  google.protobuf.Timestamp sent_at = 2;
+  string source_service            = 3; // free-form identity string
+  string message_type              = 4; // FQ name of inner payload
+  uint32 schema_version            = 5;
+}
+
+message Error {
+  string code    = 1;
+  string message = 2;
+  string details = 3;
+}
