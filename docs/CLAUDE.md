@@ -25,7 +25,11 @@ liveness watching. It owns **nothing else**.
   beginning with `_mt`.
 - **Liveness** → `HeartbeatWatcher` over a config-driven `ServiceEndpoint`
   list. Heartbeats are emitted automatically by every server constructed via
-  `AddMeshTransitServer` — never publish to `_mt.heartbeat.*` manually.
+  `AddMeshTransitServer`. A process with no command surface advertises liveness
+  via `AddMeshTransitHeartbeat(opts => …)` (a bound event endpoint, no REQ/REP).
+  Either way, never publish to `_mt.heartbeat.*` manually. Drive runtime health
+  through `HeartbeatOptions.HealthSource` / `MetadataProvider` (pulled per tick),
+  not by hand-rolling heartbeat messages.
 
 ## Don't reach into the transport
 

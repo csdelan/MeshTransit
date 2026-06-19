@@ -119,4 +119,52 @@ public class HeartbeatWatcherTests
         var reason = await downSeen.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(ServiceDownReason.MissedHeartbeats, reason);
     }
+
+    [Fact]
+    public async Task HealthSourceAndMetadataProvider_AreEvaluatedPerTick_AndUptimeIsExposed()
+    {
+        var ep = $"inproc://mt-evt-{Guid.NewGuid():N}";
+        using var bus = new EventBus();
+        bus.Bind(ep);
+
+        var status = ServiceStatus.Healthy;
+        var ticks = 0;
+
+        await using var hb = new HeartbeatPublisher(bus, new HeartbeatOptions
+        {
+            ServiceName = "epsilon",
+            HeartbeatIntervalMs = 100,
+            HealthSource = () => status,
+            MetadataProvider = meta => meta["ticks"] = (++ticks).ToString(),
+        });
+
+        ServiceLiveness? latest = null;
+        var upSeen = new TaskCompletionSource();
+        var degradedSeen = new TaskCompletionSource();
+        using var watcher = new HeartbeatWatcher(new[]
+        {
+            new ServiceEndpoint("epsilon", null, ep),
+        });
+        watcher.ServiceUp += s => { latest = s; upSeen.TrySetResult(); };
+        watcher.StatusChanged += s =>
+        {
+            latest = s;
+            if (s.Status == ServiceStatus.Degraded) degradedSeen.TrySetResult();
+        };
+        await watcher.StartAsync();
+        await hb.StartAsync(CancellationToken.None);
+
+        // Observe at least one Healthy heartbeat before flipping, so the watcher
+        // records a genuine Healthy -> Degraded transition (not a first-seen Degraded).
+        await upSeen.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Flip the health source; a subsequent tick must publish Degraded.
+        status = ServiceStatus.Degraded;
+        await degradedSeen.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.NotNull(latest);
+        Assert.True(latest!.StartedAt > DateTime.MinValue);
+        Assert.True(latest.Uptime >= TimeSpan.Zero);
+        Assert.True(ticks > 0);
+    }
 }

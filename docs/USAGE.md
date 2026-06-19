@@ -45,6 +45,33 @@ public sealed class TickWorker(EventPublisher<PingEvent> events) : BackgroundSer
 }
 ```
 
+## Heartbeat without a command server
+
+A process that only needs to advertise liveness — a background-job worker, a
+scheduler, anything with no REQ/REP surface — can register just the heartbeat:
+
+```csharp
+builder.Services.AddMeshTransitHeartbeat(opts =>
+{
+    opts.ServiceName   = "rates-worker";
+    opts.EventEndpoint = "tcp://*:9101";       // PUB socket binds here
+    opts.HeartbeatIntervalMs = 5000;
+    opts.HeartbeatMetadata["version"] = "2.0.1";
+
+    // Status is pulled every tick — report Degraded from live state without
+    // calling SetStatus. A STOPPING shutdown transition always wins.
+    opts.HealthSource = () => jobs.AnyRecentFailure ? ServiceStatus.Degraded : ServiceStatus.Healthy;
+
+    // Dynamic metadata, refreshed every tick (seeded from HeartbeatMetadata).
+    opts.MetadataProvider = meta => meta["jobs.failing"] = jobs.FailingCount.ToString();
+});
+```
+
+This brings up a dedicated `EventBus` + `HeartbeatPublisher` + hosted service.
+Do not combine it with `AddMeshTransitServer` in the same container — both bind
+the event endpoint. Servers registered via `AddMeshTransitServer` already emit
+heartbeats and now accept the same `HealthSource` / `MetadataProvider` options.
+
 ## Client
 
 ```csharp

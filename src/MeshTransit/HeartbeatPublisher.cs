@@ -17,7 +17,9 @@ public sealed class HeartbeatPublisher : IAsyncDisposable
     private readonly string _instanceId = Guid.NewGuid().ToString("N");
     private readonly Timestamp _startedAt = Timestamp.FromDateTime(DateTime.UtcNow);
     private readonly int _intervalMs;
-    private readonly Dictionary<string, string> _metadata;
+    private readonly Dictionary<string, string> _staticMetadata;
+    private readonly Func<ServiceStatus>? _healthSource;
+    private readonly Action<IDictionary<string, string>>? _metadataProvider;
     private readonly string _topic;
 
     private long _sequence;
@@ -25,7 +27,7 @@ public sealed class HeartbeatPublisher : IAsyncDisposable
     private CancellationTokenSource? _cts;
     private Task? _loop;
 
-    public HeartbeatPublisher(EventBus bus, MeshTransitServerOptions options)
+    public HeartbeatPublisher(EventBus bus, HeartbeatOptions options)
     {
         ArgumentNullException.ThrowIfNull(bus);
         ArgumentNullException.ThrowIfNull(options);
@@ -35,7 +37,9 @@ public sealed class HeartbeatPublisher : IAsyncDisposable
         _bus = bus;
         _serviceName = options.ServiceName;
         _intervalMs = Math.Max(50, options.HeartbeatIntervalMs);
-        _metadata = new Dictionary<string, string>(options.HeartbeatMetadata);
+        _staticMetadata = new Dictionary<string, string>(options.HeartbeatMetadata);
+        _healthSource = options.HealthSource;
+        _metadataProvider = options.MetadataProvider;
         _topic = MeshTransitProtocol.HeartbeatTopic(_serviceName);
     }
 
@@ -85,13 +89,39 @@ public sealed class HeartbeatPublisher : IAsyncDisposable
             StartedAt = _startedAt,
             SentAt = Timestamp.FromDateTime(DateTime.UtcNow),
             Sequence = (ulong)Interlocked.Increment(ref _sequence),
-            Status = Status,
+            Status = ResolveStatus(),
             IntervalMs = (uint)_intervalMs,
         };
-        foreach (var kv in _metadata) hb.Metadata[kv.Key] = kv.Value;
+        foreach (var kv in ResolveMetadata()) hb.Metadata[kv.Key] = kv.Value;
 
         var envelope = EnvelopeCodec.Encode(hb, _serviceName);
         _bus.Publish(_topic, EnvelopeCodec.ToBytes(envelope));
+    }
+
+    /// <summary>
+    /// Resolves the status to publish this tick. A pending shutdown
+    /// (<see cref="ServiceStatus.Stopping"/>) always wins; otherwise an optional
+    /// <see cref="HeartbeatOptions.HealthSource"/> is authoritative and its result is
+    /// latched into <see cref="Status"/>.
+    /// </summary>
+    private ServiceStatus ResolveStatus()
+    {
+        var current = Status;
+        if (current == ServiceStatus.Stopping || _healthSource is null)
+            return current;
+
+        var resolved = _healthSource();
+        Volatile.Write(ref _status, (int)resolved);
+        return resolved;
+    }
+
+    private IReadOnlyDictionary<string, string> ResolveMetadata()
+    {
+        if (_metadataProvider is null) return _staticMetadata;
+
+        var snapshot = new Dictionary<string, string>(_staticMetadata);
+        _metadataProvider(snapshot);
+        return snapshot;
     }
 
     public async ValueTask DisposeAsync()

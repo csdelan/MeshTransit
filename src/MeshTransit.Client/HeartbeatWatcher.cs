@@ -23,9 +23,23 @@ public sealed class ServiceLiveness
     public string InstanceId { get; internal set; } = string.Empty;
     public ServiceStatus Status { get; internal set; } = ServiceStatus.Unspecified;
     public DateTime LastHeartbeat { get; internal set; } = DateTime.MinValue;
+
+    /// <summary>When the peer's current instance started (UTC), as reported on the wire.</summary>
+    public DateTime StartedAt { get; internal set; } = DateTime.MinValue;
+
     public uint IntervalMs { get; internal set; }
     public bool IsUp { get; internal set; }
     public ServiceDownReason LastDownReason { get; internal set; } = ServiceDownReason.MissedHeartbeats;
+
+    /// <summary>
+    /// How long the current instance has been up, measured from <see cref="StartedAt"/> to
+    /// the last observed heartbeat. <see cref="TimeSpan.Zero"/> until a heartbeat carrying a
+    /// start time has been seen.
+    /// </summary>
+    public TimeSpan Uptime =>
+        StartedAt == DateTime.MinValue || LastHeartbeat == DateTime.MinValue
+            ? TimeSpan.Zero
+            : LastHeartbeat - StartedAt;
 }
 
 /// <summary>
@@ -111,6 +125,7 @@ public sealed class HeartbeatWatcher : IDisposable
 
         if (string.IsNullOrEmpty(hb.ServiceName)) return;
         var now = DateTime.UtcNow;
+        var startedAt = hb.StartedAt?.ToDateTime() ?? DateTime.MinValue;
 
         var liveness = _services.AddOrUpdate(
             hb.ServiceName,
@@ -120,6 +135,7 @@ public sealed class HeartbeatWatcher : IDisposable
                 InstanceId = hb.InstanceId,
                 Status = hb.Status,
                 LastHeartbeat = now,
+                StartedAt = startedAt,
                 IntervalMs = hb.IntervalMs,
                 IsUp = false,
             },
@@ -141,6 +157,7 @@ public sealed class HeartbeatWatcher : IDisposable
             liveness.InstanceId = hb.InstanceId;
             liveness.Status = hb.Status;
             liveness.LastHeartbeat = now;
+            if (startedAt != DateTime.MinValue) liveness.StartedAt = startedAt;
             liveness.IntervalMs = hb.IntervalMs == 0 ? liveness.IntervalMs : hb.IntervalMs;
 
             if (hb.Status == ServiceStatus.Stopping)
