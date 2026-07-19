@@ -13,6 +13,7 @@
     <PackageProjectUrl>https://github.com/csdelan/MeshTransit</PackageProjectUrl>
     <RepositoryUrl>https://github.com/csdelan/MeshTransit</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>0.1.0</Version>
+    <!-- Package versions are per-project (<VersionPrefix> in each packable .csproj), managed by
+         the nuget-publish skill. Keep them in lockstep when publishing the set. -->
   </PropertyGroup>
 </Project>

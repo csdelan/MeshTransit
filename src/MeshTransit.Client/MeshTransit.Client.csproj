@@ -3,13 +3,14 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <PackageId>MeshTransit.Client</PackageId>
+    <VersionPrefix>0.2.0</VersionPrefix>
     <Description>Client primitives (CommandClient, EventSubscriber, HeartbeatWatcher) for MeshTransit — a brokerless ZeroMQ + Protobuf microservice toolkit.</Description>
     <PackageTags>zeromq;protobuf;messaging;mesh;microservices</PackageTags>
-    <NoWarn>$(NoWarn);NU1902;NU1903;NU1904</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NetMQ" Version="4.0.1.13" />
+    <!-- 4.0.4.2 is the first NetMQ with a net10.0 target; see MeshTransit.csproj. -->
+    <PackageReference Include="NetMQ" Version="4.0.4.2" />
     <PackageReference Include="Google.Protobuf" Version="3.28.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
   </ItemGroup>

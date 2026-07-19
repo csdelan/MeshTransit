@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <PackageId>MeshTransit.Contracts</PackageId>
+    <VersionPrefix>0.2.0</VersionPrefix>
     <Description>Wire format contracts (Envelope, Header, Error, Heartbeat) for MeshTransit — a brokerless ZeroMQ + Protobuf microservice toolkit.</Description>
     <PackageTags>zeromq;protobuf;messaging;mesh;microservices</PackageTags>
   </PropertyGroup>
